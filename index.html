@@ -165,7 +165,7 @@
                 formData.append("image", fileInput.files[0])
 
                 var xhr = new XMLHttpRequest();
-                xhr.open('POST','http://localhost:5000/predict', true);
+                xhr.open('POST','/predict', true);
 
                 //when server responds
                 xhr.onload = function(){
@@ -177,8 +177,9 @@
                     }
 
                     else{
-                        document.getElementById("result").textContent = "No result";
-                        document.getElementById("confidence").textContent = "Confidence: Server Error";
+                        var data = JSON.parse(xhr.responseText);
+                        document.getElementById("result").textContent = "Error" + xhr.status;
+                        document.getElementById("confidence").textContent = data.error || 'Unknown Server Error';
                     }
                 };
             
