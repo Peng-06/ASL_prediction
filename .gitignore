@@ -1,0 +1,5 @@
+venv/
+train/archive
+train/archive.zip
+__pycache__/
+*.pyc

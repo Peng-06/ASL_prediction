@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Sign Language Predictor</title>
+        <!--styles-->
+        <!--title-->
+        <style>
+
+            body{
+                font-family: arial;
+                text-align: center;
+            }
+
+            header{
+                background: purple;
+                color: white;
+                padding: 20px;
+            }
+
+            .container{
+                max-width: 600px;
+                margin: 20px auto;
+                padding: 20px
+            }
+
+            .box{
+                border: 2px solid;
+                border-radius: 10px;
+                padding: 30px;
+                background: beige;
+            }
+
+            button{
+                background: purple;
+                color: white;
+                padding: 15px 40px;
+                border: none;
+                border-radius: 5px;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            button:hover{
+                background: darkviolet;
+                transform: scale(1.1);
+            }
+
+            #preview{
+                max-width: 200px;
+                border-radius: 10px;
+                display: none;
+                margin: 20px auto;
+            }
+
+            #result{
+                color:purple;
+                font-size: 80px;
+            }
+
+            #confidence{
+                color: gray;
+                font-size: 18px;
+            }
+
+            #message{
+                color: gray;
+                font-size: 18px;
+            }
+
+            #fileInput{
+                display: none;
+            }
+            .file-btn{
+                background: purple;
+                color: white;
+                padding: 15px 30px;
+                border-radius: 5px;
+                display: inline-block;
+                cursor: pointer;
+            }
+            .file-btn:hover{
+                background: darkviolet;
+                transform: scale(1.1);
+            }
+            #filename{
+                color : gray;
+                margin-top: 10px;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <header> 
+            <h1> Welcome to Sign Language Predictor!</h1>  
+        </header>
+        <div class="container">
+            
+
+            <div class="box">
+                <div id="message">Select an image to predict</div>
+                <img id="preview">
+                <div id="result"></div>
+                <div id="confidence"></div>
+            </div>
+
+            <div class="box">
+                <label class="file-btn" for="fileInput">Choose image</label>
+                <input type="file" id="fileInput" accept="image/*">
+                <div id="filename">Nothing here yet!</div>
+            </div>
+            
+            <div class="box">
+                <button onclick="predict()">Predict</button>
+            </div>
+
+        </div>
+        <!--content-->
+        <!--script>
+            function showLetter(){
+                var letters = ['A','B','C','D']
+                var randomIndex = Math.floor(Math.random()*letters.length)
+                var letter = letters[randomIndex]
+
+                document.getElementById('result').textContent = letter;
+                document.getElementById('message').textContent = "Prediction is: " + letter
+            }
+        </script-->
+
+        <script>
+
+            document.getElementById("fileInput").addEventListener("change", function(){
+
+                var file = this.files[0]
+
+                if (file){
+                    document.getElementById("filename").textContent = file.name;
+                    document.getElementById("result").textContent = "";
+                    document.getElementById("confidence").textContent = "";
+
+                    var reader = new FileReader();
+                    reader.onload=function(e){
+                        var preview = document.getElementById("preview");
+                        preview.src = e.target.result;
+                        preview.style.display = "block";
+                        document.getElementById("message").textContent="Image is loaded"
+                    }
+                    reader.readAsDataURL(file);
+                }
+
+            });
+
+        
+            function predict(){
+                var fileInput = document.getElementById("fileInput");
+                if (!fileInput.files || !fileInput.files[0]){
+                    alert("Please upload an image to predict!")
+                    return;
+                }
+
+                document.getElementById("result").textContent = "...";
+                document.getElementById("confidence").textContent = "Processing...";
+
+                var formData = new FormData();
+                formData.append("image", fileInput.files[0])
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST','http://localhost:5000/predict', true);
+
+                //when server responds
+                xhr.onload = function(){
+
+                    if (xhr.status == 200){
+                        var data = JSON.parse(xhr.responseText);
+                        document.getElementById("result").textContent = data.prediction
+                        document.getElementById("confidence").textContent = "Confidence: " + (data.confidence * 100).toFixed(1) + "%";
+                    }
+
+                    else{
+                        document.getElementById("result").textContent = "No result";
+                        document.getElementById("confidence").textContent = "Confidence: Server Error";
+                    }
+                };
+            
+                xhr.onerror = function(){
+                    document.getElementById("result").textContent = "No result";
+                    document.getElementById("confidence").textContent = "Confidence: Server Connection Error";
+                }
+
+                xhr.send(formData)
+
+            }
+        </script>
+    </body>
+</html>
